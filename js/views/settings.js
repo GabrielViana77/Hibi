@@ -86,6 +86,13 @@ export function renderSettings(ctx) {
             ),
             fileInput,
           ),
+          ui.hasPersonal
+            ? h(
+                'div',
+                { class: 'actions' },
+                h('button', { class: 'btn', type: 'button', onClick: actions.loadPersonal }, 'Carregar minha rotina pessoal'),
+              )
+            : null,
           ui.message ? h('p', { class: 'toast', role: 'status' }, ui.message) : null,
         ],
       }),

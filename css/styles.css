@@ -1553,3 +1553,331 @@ ol {
     transform: none;
   }
 }
+
+/* ================= Hoje: resumo, sugestões, Pomodoro, táticas ================= */
+.greet {
+  font-size: 15px;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.stat {
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stat-value {
+  margin-top: 6px;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.progress {
+  margin-top: -6px;
+}
+
+/* Sugestões */
+.tip-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.tip {
+  display: flex;
+  gap: 12px;
+}
+
+.tip-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+
+.tip-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.tip-text {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Pomodoro */
+.pomo-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pomo-top .section-label {
+  margin-bottom: 2px;
+}
+
+.pomo-phase {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.seg-btn {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seg-btn[aria-pressed='true'] {
+  background: var(--ground);
+  color: var(--paper);
+}
+
+.pomo-clock {
+  margin: 18px 0 6px;
+  font-size: 64px;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.pomo.running .pomo-clock {
+  color: var(--amber);
+}
+
+.pomo.phase-short .pomo-clock,
+.pomo.phase-long .pomo-clock {
+  color: #8fc9a3;
+}
+
+.pomo-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.pomo-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--muted);
+}
+
+.pomo-dot.on {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+.pomo-count {
+  margin-left: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.pomo-hint {
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+/* Táticas de estudo */
+.tactics > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.tactics > summary::-webkit-details-marker {
+  display: none;
+}
+
+.tactics .section-label {
+  margin-bottom: 0;
+}
+
+.tactics-hint {
+  font-size: 13px;
+  color: var(--amber);
+}
+
+.tactic-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.tactic:first-child .tip-title::after {
+  content: 'tática de hoje';
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Semana em resumo */
+.strip {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.strip-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.strip-bar {
+  position: relative;
+  width: 100%;
+  max-width: 28px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--raised);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.strip-bar > span {
+  display: block;
+  width: 100%;
+  background: var(--amber);
+  border-radius: 0 0 8px 8px;
+}
+
+.strip-day.today .strip-name {
+  color: var(--paper);
+  font-weight: 700;
+}
+
+.strip-day.today .strip-bar {
+  box-shadow: 0 0 0 1.5px var(--amber);
+}
+
+.strip-day.future {
+  opacity: 0.55;
+}
+
+.strip-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.phrase {
+  margin-top: 8px;
+  padding-left: 14px;
+  border-left: 2px solid var(--amber);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.today-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.today-side > .section-label {
+  margin-bottom: -12px;
+}
+
+@media (min-width: 960px) {
+  .today-grid {
+    grid-template-columns: minmax(380px, 1.2fr) minmax(320px, 1fr);
+    gap: 40px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stat-value {
+    font-size: 21px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pomo-clock {
+    font-size: 54px;
+  }
+}
+
+.more-tactics {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.more-tactics > summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--amber);
+}
+
+.more-tactics .tactic:first-child .tip-title::after {
+  content: none;
+}

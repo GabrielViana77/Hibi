@@ -2,6 +2,7 @@
 // As funções recebem o `storage` como parâmetro para poderem ser testadas sem navegador.
 
 import { MAX_BLOCKS, sanitizeWeek } from './model.js';
+import { sanitizePomo } from './pomodoro.js';
 
 const STATE_KEY = 'hibi:v2:state';
 const DONE_KEY = 'hibi:v1:done';
@@ -46,7 +47,7 @@ export function parseImport(text) {
   try {
     data = JSON.parse(text);
   } catch {
-    return { ok: false, error: 'Esse arquivo não é um JSON válido.' };
+    return { ok: false, error: 'Esse arquivo não é um JSON válido. Use um backup exportado pelo Hibi (hibi-rotina.json).' };
   }
   const list = Array.isArray(data) ? data : data?.week;
   if (!Array.isArray(list)) return { ok: false, error: 'Esse arquivo não parece uma rotina do Hibi.' };
@@ -112,6 +113,49 @@ export function saveTimer(timer, storage = local()) {
   try {
     if (timer) storage?.setItem(TIMER_KEY, JSON.stringify(timer));
     else storage?.removeItem(TIMER_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ---------- Pomodoro ----------
+// Estado do ciclo atual e contagem de focos concluídos por dia ({ "2026-10-31": 3 }).
+
+const POMO_KEY = 'hibi:v1:pomo';
+const POMO_COUNT_KEY = 'hibi:v1:pomos';
+
+export function loadPomo(storage = local()) {
+  try {
+    return sanitizePomo(JSON.parse(storage?.getItem(POMO_KEY)));
+  } catch {
+    return null;
+  }
+}
+
+export function savePomo(pomo, storage = local()) {
+  try {
+    if (pomo) storage?.setItem(POMO_KEY, JSON.stringify(pomo));
+    else storage?.removeItem(POMO_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function loadPomoCounts(storage = local()) {
+  try {
+    const parsed = JSON.parse(storage?.getItem(POMO_COUNT_KEY));
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return Object.fromEntries(Object.entries(parsed).filter(([, n]) => Number.isInteger(n) && n > 0 && n < 1000));
+  } catch {
+    return {};
+  }
+}
+
+export function savePomoCounts(counts, storage = local()) {
+  try {
+    storage?.setItem(POMO_COUNT_KEY, JSON.stringify(counts));
     return true;
   } catch {
     return false;

@@ -12,6 +12,9 @@
   - **Tarefa:** o que você quer fazer e marcar como feito (estudo, treino). Pode ser marcada como opcional.
   - **Rotina:** acordar, desacelerar, dormir.
 - **Hoje:** o bloco atual (ou o próximo), quanto falta, o progresso do dia e a lista dos blocos.
+- **Pomodoro:** cronômetro de foco e pausa (25 + 5 ou 50 + 10), com pausa longa a cada 4 focos, contagem do dia e aviso sonoro. Continua de onde parou se você recarregar a página.
+- **Táticas de estudo:** nos blocos de estudo, o Hoje mostra a tática do dia e outras (recordação ativa, revisão espaçada, explicar em voz alta…).
+- **Resumo e sugestões:** tarefas feitas, tempo de foco, tempo livre, sequência de dias, sugestões conforme a hora e a agenda, e a semana em resumo.
 - **Só 5 minutos:** o botão contra a inércia. Cinco minutos de cronômetro; ao final, você decide se continua, marca como feito ou para por aqui.
 - **Semana:** grade completa no computador (clique num horário vazio para criar um bloco) e lista por dia no celular.
 - **Lembretes:** exporta a semana para o app Calendário (`.ics`), com alarmes semanais.
@@ -50,7 +53,7 @@ export const WEEK = [
 
 Campos de um bloco: `day` (0 = domingo … 6 = sábado), `start`/`end` (`HH:MM`), `title`, `type` (`fixo`, `tarefa` ou `rotina`), e opcionais `note`, `optional` (só tarefas) e `remind` (0, 5, 10, 15, 30 ou 60 minutos de antecedência). Veja `js/examples.js` como modelo.
 
-Quem usa a versão publicada começa do zero ou carrega o exemplo, e edita tudo dentro do app. Para levar a sua rotina ao celular: **Ajustes → Exportar rotina** no computador e **Importar rotina** no celular.
+Quem usa a versão publicada começa do zero ou carrega o exemplo, e edita tudo dentro do app. Para levar a sua rotina ao celular: `npm run export-personal` gera o `rotina-pessoal.json` (fora do git), ou use **Ajustes → Exportar rotina**; no celular, **Importar rotina**. O `personal.js` é código, não dá para importá-lo direto. Neste computador, o botão **Carregar minha rotina pessoal** (Ajustes) recarrega o `personal.js`.
 
 ## Publicando no GitHub Pages
 
@@ -78,6 +81,8 @@ js/editor.js          janela de criar/editar blocos
 js/ui.js, brand.js    peças de interface e a marca
 js/views/             telas: hero, hoje, semana, ajustes
 js/examples.js        semana de exemplo
+js/pomodoro.js        lógica do Pomodoro
+js/suggest.js         sugestões, táticas de estudo e resumo do dia
 js/personal.js        sua rotina (ignorado pelo git, opcional)
 icons/                ícones gerados por scripts/make-icons.py
 tests/                testes (node --test)

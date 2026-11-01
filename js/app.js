@@ -17,14 +17,31 @@ import {
   exportJson,
   loadDone,
   loadState,
+  loadPomo,
+  loadPomoCounts,
   loadTimer,
   parseImport,
   pruneDone,
   saveDone,
+  savePomo,
+  savePomoCounts,
   saveState,
   saveTimer,
   setDone,
 } from './store.js';
+import {
+  PHASE_LABEL,
+  changePreset,
+  createPomo,
+  finished,
+  formatClock,
+  isRunning,
+  leftMs,
+  nextPhase,
+  pause,
+  resume,
+} from './pomodoro.js';
+import { streak } from './suggest.js';
 import { buildIcs } from './ics.js';
 import { createEditor } from './editor.js';
 import { renderHero } from './views/hero.js';
@@ -54,6 +71,8 @@ const desktopQuery = window.matchMedia('(min-width: 960px)');
 let state = { welcomed: false, week: [] };
 let done = {};
 let timer = null;
+let pomo = null; // ciclo do Pomodoro; null = ainda não usado
+let pomoCounts = {};
 let route = 'hoje';
 let lastMinuteKey = '';
 
@@ -61,6 +80,7 @@ const ui = {
   pastOpen: false,
   selectedDay: getNow().getDay(),
   message: '',
+  hasPersonal: false,
 };
 
 const persist = () => saveState(state);
@@ -149,6 +169,39 @@ const actions = {
     actions.markDone(blockId, true);
   },
 
+  // ----- Pomodoro -----
+  pomoStart() {
+    pomo = resume(pomo ?? createPomo(), Date.now());
+    savePomo(pomo);
+    render();
+  },
+
+  pomoPause() {
+    if (!pomo) return;
+    pomo = pause(pomo, Date.now());
+    savePomo(pomo);
+    render();
+  },
+
+  pomoSkip() {
+    if (!pomo) return;
+    pomo = nextPhase(pomo);
+    savePomo(pomo);
+    render();
+  },
+
+  pomoReset() {
+    pomo = null;
+    savePomo(null);
+    render();
+  },
+
+  pomoPreset(key) {
+    pomo = changePreset(pomo ?? createPomo(), key);
+    savePomo(pomo);
+    render();
+  },
+
   startFromScratch() {
     state.welcomed = true;
     persist();
@@ -195,7 +248,27 @@ const actions = {
     render();
   },
 
+  async loadPersonal() {
+    try {
+      const personal = await import('./personal.js');
+      if (state.week.length && !window.confirm('Isso substitui a sua semana atual pela sua rotina pessoal. Continuar?')) return;
+      state.week = sanitizeWeek(personal.WEEK).week;
+      state.welcomed = true;
+      persist();
+      toast('Rotina pessoal carregada.');
+      render();
+    } catch {
+      ui.message = 'Não encontrei o arquivo js/personal.js neste computador.';
+      render();
+    }
+  },
+
   async importFile(file) {
+    if (/\.m?js$/i.test(file.name)) {
+      ui.message = 'Esse arquivo é código (personal.js), não um backup. Use o rotina-pessoal.json, ou o botão “Carregar minha rotina pessoal”.';
+      render();
+      return;
+    }
     if (file.size > MAX_IMPORT_BYTES) {
       ui.message = 'Arquivo grande demais para ser uma rotina do Hibi.';
       render();
@@ -327,6 +400,9 @@ function render() {
     week: state.week,
     done,
     timer,
+    pomo: pomo ?? createPomo(),
+    pomoToday: pomoCounts[dateKey(now)] ?? 0,
+    streak: streak(done, now, dateKey),
     ui,
     actions,
     desktop: desktopQuery.matches,
@@ -354,7 +430,55 @@ function onTimerEnd() {
   }
 }
 
+function beep() {
+  try {
+    const Audio = window.AudioContext || window.webkitAudioContext;
+    if (!Audio) return;
+    const ctx = new Audio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = 660;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.9);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.95);
+    osc.onended = () => ctx.close();
+  } catch {
+    // Sem som: tudo bem, a tela avisa.
+  }
+}
+
+function onPomoEnd() {
+  const wasFocus = pomo.phase === 'focus';
+  if (wasFocus) {
+    const key = dateNow();
+    pomoCounts = { ...pomoCounts, [key]: (pomoCounts[key] ?? 0) + 1 };
+    savePomoCounts(pomoCounts);
+  }
+  pomo = nextPhase(pomo);
+  savePomo(pomo);
+  navigator.vibrate?.([200, 100, 200]);
+  beep();
+  toast(wasFocus ? `Foco concluído. ${PHASE_LABEL[pomo.phase]}: respire.` : 'Pausa acabou. Pronto para o próximo foco?');
+  render();
+}
+
+function tickPomo() {
+  const running = pomo && isRunning(pomo);
+  if (running && finished(pomo, Date.now())) {
+    onPomoEnd();
+    return;
+  }
+  const text = running ? formatClock(leftMs(pomo, Date.now())) : null;
+  const clock = document.getElementById('pomo-clock');
+  if (clock && text) clock.textContent = text;
+  document.title = running ? `${text} · ${PHASE_LABEL[pomo.phase]} · Hibi` : 'Hibi · organize sua rotina';
+}
+
 function tick() {
+  tickPomo();
   if (timer?.phase === 'running') {
     const left = timer.endsAt - Date.now();
     if (left <= 0) {
@@ -395,9 +519,19 @@ async function boot() {
 
   done = pruneDone(loadDone(), getNow());
   timer = loadTimer();
+  pomo = loadPomo();
+  pomoCounts = loadPomoCounts();
 
-  const fromHash = location.hash.slice(1);
-  route = ROUTES.includes(fromHash) ? fromHash : state.welcomed ? 'hoje' : 'inicio';
+  // O site sempre abre na apresentação; o botão principal leva ao app.
+  route = 'inicio';
+  if (location.hash) history.replaceState(null, '', `${location.pathname}${location.search}`);
+
+  try {
+    await import('./personal.js');
+    ui.hasPersonal = true;
+  } catch {
+    ui.hasPersonal = false;
+  }
 
   render();
   lastMinuteKey = `${dateNow()} ${minutesOfDay(getNow())}`;

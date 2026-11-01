@@ -17,6 +17,21 @@ import {
 
 const addMinutes = (hhmm, minutes) => fromMinutes(Math.min(toMinutes(hhmm) + minutes, 23 * 60 + 59));
 
+// Exemplo de nota que muda conforme o nome do bloco, para não sugerir sempre a mesma coisa.
+const NOTE_HINTS = [
+  [/estud|revis|prova|lista|leitura/i, 'Ex.: Lista 3, capítulo 2'],
+  [/academia|treino|corrida|esporte/i, 'Ex.: Treino de pernas, levar garrafa'],
+  [/aula|curso|faculdade/i, 'Ex.: Sala 204, levar o notebook'],
+  [/trabalho|reuni|estágio|estagio/i, 'Ex.: Reunião às 15h, enviar relatório'],
+  [/almo|jantar|café|cafe|lanche|refei/i, 'Ex.: Marmita pronta, beber água'],
+  [/dorm|desacel|acordar/i, 'Ex.: Telas longe, luz baixa'],
+  [/leitura|ler|livro/i, 'Ex.: 20 páginas'],
+];
+function notePlaceholder(title) {
+  const hit = NOTE_HINTS.find(([re]) => re.test(title));
+  return `Opcional. ${hit ? hit[1] : 'Ex.: o que levar ou lembrar'}`;
+}
+
 export function createEditor({ dialog, getWeek, onSave, onDelete }) {
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) dialog.close();
@@ -86,8 +101,12 @@ export function createEditor({ dialog, getWeek, onSave, onDelete }) {
       type: 'text',
       maxlength: String(MAX_NOTE),
       autocomplete: 'off',
-      placeholder: 'Opcional. Ex.: Leve a roupa na mochila.',
+      placeholder: notePlaceholder(draft.title ?? ''),
       value: draft.note ?? '',
+    });
+
+    titleInput.addEventListener('input', () => {
+      noteInput.placeholder = notePlaceholder(titleInput.value);
     });
 
     const remindSelect = h(
@@ -136,6 +155,7 @@ export function createEditor({ dialog, getWeek, onSave, onDelete }) {
                   type: 'button',
                   onClick: () => {
                     titleInput.value = tpl.title;
+                    noteInput.placeholder = notePlaceholder(tpl.title);
                     form.elements.type.value = tpl.type;
                     remindSelect.value = tpl.remind === undefined ? '' : String(tpl.remind);
                     endInput.value = addMinutes(startInput.value || '09:00', tpl.minutes);

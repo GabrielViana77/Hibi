@@ -45,8 +45,8 @@ def draw_mark(size, mark_scale, background, ink, accent, stroke_w=3.6):
     d = ImageDraw.Draw(img)
 
     # Quadro de 64x64 da marca; a caixa útil vai de x=5.2 a 59.5 e y=8.2 a 55.8.
-    box_w, box_h = 54.3, 47.6
-    cx, cy = 32.35, 32.0
+    box_w, box_h = 55.8, 49.1
+    cx, cy = 33.1, 31.75
     unit = (big * mark_scale) / max(box_w, box_h)
 
     def tx(x):
@@ -77,15 +77,17 @@ def draw_mark(size, mark_scale, background, ink, accent, stroke_w=3.6):
         (tx(13), ty(29.5), tx(23), ty(34.5)), radius=2.5 * unit, fill=accent
     )
 
-    # 々: traço 1 (diagonal)
-    stroke(d, [pt((51, 10)), pt((43.5, 26))], w, ink)
-    # traço 2: horizontal, curva e desce
-    path2 = [pt((41, 26)), pt((55, 26))]
-    path2 += [pt(p) for p in bezier_q((55, 26), (58.5, 26), (57.2, 29.5))][1:]
-    path2 += [pt((46, 54))]
+    # 々: traço 1 (curva suave)
+    stroke(d, [pt(q) for q in bezier_q((49, 9), (47, 19), (39, 27))], w, ink)
+    # traço 2: horizontal curta, barriga larga e desce para a esquerda
+    path2 = [pt((42, 23)), pt((54, 23))]
+    path2 += [pt(q) for q in bezier_q((54, 23), (60.5, 23), (59.5, 31))][1:]
+    path2 += [pt(q) for q in bezier_q((59.5, 31), (57.5, 46), (41, 54.5))][1:]
     stroke(d, path2, w, ink)
-    # traço 3 (curto)
-    stroke(d, [pt((47, 38)), pt((42.5, 47))], w, ink)
+    # ponto âmbar (rima com a barra do 日)
+    r = 2.4 * unit
+    cxp, cyp = pt((50, 41))
+    d.ellipse((cxp - r, cyp - r, cxp + r, cyp + r), fill=accent)
 
     return img.resize((size, size), Image.LANCZOS)
 

@@ -5,3 +5,4 @@ node_modules/
 
 # Rotina pessoal pré-carregada: fica só no seu computador.
 js/personal.js
+rotina-pessoal.json
