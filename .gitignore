@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+*.log
+.env
+
+# Rotina pessoal pré-carregada: fica só no seu computador.
+js/personal.js
